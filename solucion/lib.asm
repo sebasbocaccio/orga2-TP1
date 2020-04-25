@@ -1,7 +1,7 @@
+%define NULL 0
+%define nullTerminator 0
 
 section .data
-
-section .text
 
 global strLen
 global strClone
@@ -27,20 +27,95 @@ global fs_sizeModFive
 global fs_firstChar
 global fs_bitSplit
 
+extern fprintf
+extern free
+
+section .rodata
+
+stringPrintFormat: db '%s', 0
+nullString: db 'NULL'
+
+section .text
+
 ;*** String ***
 
 strClone:
-ret
+	;*** Necesitamos Malloc ***
+	ret
+
 strLen:
-ret
+	;ARIDAD: uint32_t strLen(char* pString)
+	;RDI: pString
+	mov R8b, byte [RDI]
+	xor rax, rax
+	.strLenCountLoop:
+		cmp R8b, NULL
+		je .endStrLen
+		inc eax
+		mov r8b, byte [rdi + rax]
+		jmp .strLenCountLoop
+	.endStrLen:
+	ret
+
 strCmp:
-ret
+	;strCmp(char* a, char* b)
+	;RDI; a
+	;RSI: b
+	xor RAX, RAX
+	.strCmpLoop:
+		cmp byte [RDI], nullTerminator
+		je .strCheck
+		mov R8b, byte [RSI]
+		cmp byte [RDI], R8b
+		jg .strCmpGreater
+		jl .strCmpLesser
+		inc RDI
+		inc RSI
+		jmp .strCmpLoop
+	jmp .endStrCmp 
+	.strCheck:;TODO pensar mejor nombre para esta etiqueta
+		cmp byte [RSI], nullTerminator
+		jne .strCmpLesser
+		jmp .endStrCmp
+	.strCmpGreater:
+		dec RAX
+		jmp .endStrCmp
+	.strCmpLesser:
+		inc RAX
+		jmp .endStrCmp
+	.endStrCmp:
+	ret
+
 strConcat:
-ret
+	;*** Necesitamos Malloc ***
+	ret
+
 strDelete:
-ret
+	ret
+
 strPrint:
-ret
+	;ARIDAD: voidstrPrint(char* a, FILE *pFile)
+	;RDI: string
+	;RSI: pFile
+	push RBP
+	mov RBP, RSP
+	mov R8, RDI; R8 tiene al string
+	xor RAX, RAX
+	cmp byte [RDI], nullTerminator
+	je .printNull
+	.printNormal:
+		mov RDI, RSI
+		mov RSI, stringPrintFormat
+		mov RDX, R8
+		jmp .endStrPrint
+	.printNull:
+		mov RDI, RSI
+		mov RSI, stringPrintFormat
+		mov RDX, nullString
+	.endStrPrint:
+		call fprintf
+	pop rbp
+	ret
 
 ;*** List ***
 
