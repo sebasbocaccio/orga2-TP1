@@ -311,12 +311,129 @@ listAddLast:
 		ret
 
 listAdd:
-	ret
+	;ARIDAD: void listAdd(list_t* l, void* data, funcCmp_t* fc)
+	;RDI: lista
+	;RSI: data
+	;RDX: funcCmp
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	push rbx
+	sub rsp, 8
+	;----------------
+	mov r12, rdi; R12: lista
+	mov r13, rsi; R13: data
+	mov r14, rdx; R14: funcCmp
+	;----------------
+	mov r15, [r12 + list_first_offset]
+	.listAddLoop:
+		cmp r15, NULL
+		je .listAdd_addToBack
+		mov rdi, r13
+		mov rsi, [r15 + list_elem_data_offset]
+		call r14
+		cmp rax, 0
+		jl .continueWithListAddLoop; data con elemActual_data. Si es >= 0, lo ponemos a la izq de elemento actual
+		jmp .addElement
+		.continueWithListAddLoop:
+			mov r15, [r15 + list_elem_next_offset] 
+		jmp .listAddLoop
+	.addElement:
+		mov rbx, [r15 + list_elem_prev_offset]
+		cmp rbx, NULL
+		je .listAdd_addToFront
+		;En este caso quedó en el medio de dos elementos
+		mov rdi, list_elem_size
+		call malloc; RAX: Nuevo nodo
+		;-------------------------------------
+		mov [rax + list_elem_data_offset], r13
+		mov [rbx + list_elem_next_offset], rax
+		mov [rax + list_elem_prev_offset], rbx
+		mov [r15 + list_elem_prev_offset], rax
+		mov [rax + list_elem_next_offset], r15
+		jmp .endListAdd
+	.listAdd_addToFront:
+		mov rdi, r12
+		mov rsi, r13
+		call listAddFirst
+		jmp .endListAdd
+	.listAdd_addToBack:
+		mov rdi, r12
+		mov rsi, r13
+		call listAddLast
+	;----------------
+	.endListAdd:
+		add rsp, 8
+		pop rbx
+		pop r15
+		pop r14
+		pop r13
+		pop r12
+		pop rbp
+		ret
 
 listClone:
 	ret
 
 listDelete:
+	;ARIDAD: listDelete(list_t* l, funcDelete_t* fd)
+	;RDI: list
+	;RSI: funcDelete
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;--------------
+	mov r12, rdi; R12: lista
+	mov r13, rsi; R13: funcDelete
+	;--------------
+	mov r14, [RDI + list_first_offset]
+	.loopListDelete:
+		cmp r14, NULL
+		je .endListDelete
+		mov r15, [r14 + list_elem_next_offset]
+		mov rdi, r14
+		mov rsi, r13
+		call listDeleteNode
+		mov r14, r15
+		jmp .loopListDelete
+	;--------------
+	.endListDelete:
+		mov rdi, r12
+		call free
+	;--------------
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
+listDeleteNode:
+	;listDeleteNode(node*, funcDelete* fd)
+	;RDI: nodo
+	;RSI: funcDelete
+	push rbp
+	mov rbp, rsp
+	push rbx
+	sub rsp, 8
+	mov rbx, rdi; RBX: nodo
+	cmp rsi, NULL 
+	je .deleteListNode
+	mov rdi, [rbx + list_elem_data_offset]
+	call rsi
+	.deleteListNode:
+		mov rdi, rbx
+		call free
+
+	add rsp, 8
+	pop rbx
+	pop rbp
 	ret
 
 listPrint:;

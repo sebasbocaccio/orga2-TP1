@@ -8,31 +8,33 @@
 #include "lib.h"
 
 void test_string() {
-	char* unString = "hola";
-	char* otroString = "mundo";
-
-	char* unStringMallocado = strClone(unString);
-	char* otroStringMallocado = strClone(otroString);
-	
-	char* concat = strConcat(unStringMallocado, unStringMallocado);
-	printf("%s\nlength = %d\n", concat, strLen(concat));
-	free(otroStringMallocado);
-	free(concat);
 }
 
 void test_lista(FILE *pfile){
     list_t* l = listNew();
-    char* data = "1";
-    char* data2 = "2";
-    char* data3 = "3";
-    listAddLast(l, data);
-    listAddLast(l, data2);
-    listAddLast(l, data3);
+    char* data = "Batata";
+    char* data2 = "Dado";
+    char* data3 = "Pedrito";
+
+    char* mallocdata = strClone(data);
+    char* mallocdata2 = strClone(data2);
+    char* mallocdata3 = strClone(data3);
+
+    char* prueba = "Zapallo";
+    char* mallocprueba = strClone(prueba);
+
+    listAddLast(l, mallocdata);
+    listAddLast(l, mallocdata2);
+    listAddLast(l, mallocdata3);
+
+    listAdd(l, mallocprueba, (funcCmp_t*)&strCmp);
 
     FILE* fptr = fopen("output.txt", "w");
-    listPrint(l, fptr, NULL);
+    listPrint(l, fptr, (funcPrint_t*)&strPrint);
 
     fclose(fptr);
+
+    listDelete(l, (funcDelete_t*)&strDelete);
 }
 
 void test_sorter(FILE *pfile){
