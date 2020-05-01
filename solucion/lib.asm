@@ -24,6 +24,7 @@ global listAddFirst
 global listAddLast
 global listAdd
 global listDelete
+global listClone
 global listPrint
 global sorterNew
 global sorterAdd
@@ -376,7 +377,39 @@ listAdd:
 		ret
 
 listClone:
-	ret
+	;ARIDAD: list_t* listClone(list_t* l, funcDup_t* fn)
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;-----------
+	mov r12, rdi; R12: lista
+	mov r13, rsi; R13: fn
+	;-----------
+	call listNew
+	mov r14, rax; r14: nuevaLista
+	mov r15, [r12 + list_first_offset]
+	.loopListCopy:
+		cmp r15, NULL
+		je .endListClone
+		mov rdi, [r15 + list_elem_data_offset]
+		call r13; En rax està el clon de la data
+		mov rdi, r14
+		mov rsi, rax
+		call listAddLast
+		mov r15, [r15 + list_elem_next_offset]
+		jmp .loopListCopy
+	;-----------
+	.endListClone:
+		mov rax, r14
+		pop r15
+		pop r14
+		pop r13
+		pop r12
+		pop rbp
+		ret
 
 listDelete:
 	;ARIDAD: listDelete(list_t* l, funcDelete_t* fd)

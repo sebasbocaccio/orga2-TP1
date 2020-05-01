@@ -29,12 +29,21 @@ void test_lista(FILE *pfile){
 
     listAdd(l, mallocprueba, (funcCmp_t*)&strCmp);
 
+    list_t* copyOfL = listClone(l, (funcDup_t*)&strClone);
     FILE* fptr = fopen("output.txt", "w");
     listPrint(l, fptr, (funcPrint_t*)&strPrint);
+    printf("\nCopia de l:");
+    listPrint(copyOfL, fptr, (funcPrint_t*)&strPrint);
 
-    fclose(fptr);
+    
 
     listDelete(l, (funcDelete_t*)&strDelete);
+    printf("\nCopia de l: ");
+    listPrint(copyOfL, fptr, (funcPrint_t*)&strPrint);
+
+    listDelete(copyOfL, (funcDelete_t*)&strDelete);
+
+    fclose(fptr);
 }
 
 void test_sorter(FILE *pfile){
