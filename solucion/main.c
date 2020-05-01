@@ -16,11 +16,23 @@ void test_string() {
 	
 	char* concat = strConcat(unStringMallocado, unStringMallocado);
 	printf("%s\nlength = %d\n", concat, strLen(concat));
+	free(otroStringMallocado);
 	free(concat);
 }
 
 void test_lista(FILE *pfile){
-    
+    list_t* l = listNew();
+    char* data = "1";
+    char* data2 = "2";
+    char* data3 = "3";
+    listAddLast(l, data);
+    listAddLast(l, data2);
+    listAddLast(l, data3);
+
+    FILE* fptr = fopen("output.txt", "w");
+    listPrint(l, fptr, NULL);
+
+    fclose(fptr);
 }
 
 void test_sorter(FILE *pfile){

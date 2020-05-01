@@ -1,5 +1,15 @@
 %define NULL 0
+
 %define nullTerminator 0
+
+%define list_size 16
+%define list_first_offset 0
+%define list_last_offset 8
+
+%define list_elem_size 24
+%define list_elem_data_offset 0
+%define list_elem_next_offset 8
+%define list_elem_prev_offset 16
 
 section .data
 
@@ -35,6 +45,10 @@ section .rodata
 
 stringPrintFormat: db '%s', 0
 nullString: db 'NULL'
+openBrFormat: db '[', 0
+closeBrFormat: db ']', 0
+commaFormat: db ',', 0
+pointerFormat: db '%p', 0
 
 section .text
 	;*** String ***
@@ -108,7 +122,7 @@ strCmp:
 	ret
 
 strConcat:
-	;ARIDAD: char* strConcat(char* a, char* b)
+	;ARIDAD: char* strConcat(char* a, char* b) a = H O L A x
 	;RDI: a
 	;RSI: b
 	push rbp
@@ -160,9 +174,8 @@ strConcat:
 	mov rdi, r13
 	call free
 	;-------------------
-	mov rax, r14
-	;-------------------
 	.finStrConcat:
+	mov rax, r14
 	pop r15
 	pop r14
 	pop r13
@@ -204,19 +217,177 @@ strPrint:
 ;*** List ***
 
 listNew:
-ret
+	push rbp
+	mov rbp, rsp
+	;------------
+	mov rdi, list_size
+	call malloc
+	mov qword [rax + list_first_offset], NULL
+	mov qword [rax + list_last_offset], NULL
+	;------------
+	pop rbp
+	ret
+
 listAddFirst:
-ret
+	;ARIDAD: void listAddFirst(list_t* l, void* data)
+	;RDI: lista
+	;RSI: puntero a data
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;-----------------
+	mov r12, rdi; R12: lista
+	mov r13, rsi; R13: puntero a data
+	;-----------------
+	mov rdi, list_elem_size
+	mov r14, [R12 + list_first_offset]; R14: first original
+	call malloc
+	mov qword [rax + list_elem_prev_offset], NULL
+	mov [rax + list_elem_data_offset], r13
+	mov [R12 + list_first_offset], rax
+	;-----------------
+	cmp r14, NULL
+	je .addFirstToEmptyList
+	;-----------------
+	.addFirstToNonEmptyList:
+		mov [rax + list_elem_next_offset], r14
+		mov [r14 + list_elem_prev_offset], rax
+		jmp .finAddFirstList
+	;-----------------
+	.addFirstToEmptyList:
+		mov qword [rax + list_elem_next_offset], NULL
+		mov [r12 + list_last_offset], rax
+	;-----------------
+	.finAddFirstList:
+		pop r15
+		pop r14
+		pop r13
+		pop r12
+		pop rbp
+		ret
+
 listAddLast:
-ret
+	;ARIDAD: void listAddLast(list_t* l, void* data)
+	;RDI: lista
+	;RSI: puntero a data
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;-----------------
+	mov r12, rdi; R12: lista
+	mov r13, rsi; R13: puntero a data
+	;-----------------
+	mov rdi, list_elem_size
+	mov r14, [R12 + list_last_offset]; R14: last original
+	call malloc
+	mov qword [rax + list_elem_next_offset], NULL
+	mov [rax + list_elem_data_offset], r13
+	mov [R12 + list_last_offset], rax
+	;-----------------
+	cmp r14, NULL
+	je .addLastToEmptyList
+	;-----------------
+	.addLastToNonEmptyList:
+		mov [rax + list_elem_prev_offset], r14
+		mov [r14 + list_elem_next_offset], rax
+		jmp .finAddLastList
+	;-----------------
+	.addLastToEmptyList:
+		mov qword [rax + list_elem_prev_offset], NULL
+		mov [r12 + list_first_offset], rax
+	;-----------------
+	.finAddLastList:
+		pop r15
+		pop r14
+		pop r13
+		pop r12
+		pop rbp
+		ret
+
 listAdd:
-ret
+	ret
+
 listClone:
-ret
+	ret
+
 listDelete:
-ret
-listPrint:
-ret
+	ret
+
+listPrint:;
+	;ARIDAD: void listPrint(list_t* l, FILE *pFile, funcPrint_t* fp)
+	;RDI: lista
+	;RSI: file
+	;RDX: funcPrint
+	;fprintf: file format argumentos
+	;funcPrint_t: puntero file
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;---------------
+	mov r12, rdi; R12: lista
+	mov r13, rsi; R13: file
+	mov r14, rdx; r14: funcion
+	;---------------
+	mov rdi, r13
+	mov rsi, openBrFormat
+	call fprintf
+
+	mov r15, [r12 + list_first_offset]
+	;---------------
+	cmp r14, NULL
+	je .loopListFPrintf
+	jmp .loopListPrint
+	;---------------
+	.loopListPrint:
+		cmp r15, NULL
+		je .endListPrint
+		mov rdi, [r15 + list_elem_data_offset] 
+		mov rsi, r13
+		call r14
+		mov r15, [r15 + list_elem_next_offset]
+		cmp r15, NULL
+		je .endListPrint
+		mov rdi, r13
+		mov rsi, commaFormat
+		call fprintf
+		jmp .loopListPrint
+	jmp .endListPrint
+	;---------------
+	.loopListFPrintf:
+		cmp r15, NULL
+		je .endListPrint
+		mov rdi, r13 
+		mov rsi, pointerFormat
+		mov rdx, [r15 + list_elem_data_offset]
+		call fprintf
+		mov r15, [r15 + list_elem_next_offset]
+		cmp r15, NULL
+		je .endListPrint
+		mov rdi, r13
+		mov rsi, commaFormat
+		call fprintf
+		jmp .loopListFPrintf
+	;---------------
+	.endListPrint:
+	mov rdi, r13
+	mov rsi, closeBrFormat
+	call fprintf
+	;---------------	
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
 
 ;*** Sorter ***
 
