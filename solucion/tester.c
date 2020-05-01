@@ -22,7 +22,7 @@ int main() {
     remove(filename_1);
     test_1();
     remove(filename_2);
-    test_2();
+    //test_2();
     return 0;
 }
 
@@ -191,39 +191,7 @@ void test_list(FILE *pfile) {
     listRemoveLast(l1, (funcDelete_t*)&strDelete);
     listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
     listDelete(l1,(funcDelete_t*)&strDelete);
-    // listRemove listRemoveFirst listRemoveLast
-    fprintf(pfile,"==> listRemove listRemoveFirst listRemoveLast\n");
-    l1 = listNew();
-    listRemove(l1, strings[2], (funcCmp_t*)&strCmp, 0);
-    listRemoveFirst(l1, 0);
-    listRemoveLast(l1, 0);
-    char* stringsLocal[10];
-    for(int i=0; i<10;i++)
-        stringsLocal[i] = strClone(strings[i]);
-    for(int i=0; i<10;i++)
-        listAdd(l1,stringsLocal[i],(funcCmp_t*)&strCmp);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemove(l1, strings[2], (funcCmp_t*)&strCmp, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemoveLast(l1, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemoveFirst(l1, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemoveLast(l1, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemove(l1, strings[2], (funcCmp_t*)&strCmp, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemoveFirst(l1, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemoveLast(l1, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemoveFirst(l1, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listRemove(l1, strings[2], (funcCmp_t*)&strCmp, 0);
-    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listDelete(l1,0);
-    for(int i=0; i<10;i++)
-        free(stringsLocal[i]);
+    
 }
 
 /** Sorter **/
@@ -322,7 +290,7 @@ void test_1(char* filename){
     FILE *pfile;
     RUN(filename,test_strings(pfile););
     RUN(filename,test_list(pfile););
-    RUN(filename,test_sorter(pfile););
+    //RUN(filename,test_sorter(pfile););
 }
 
 void test_2(char* filename){

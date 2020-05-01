@@ -12,37 +12,20 @@ void test_string() {
 
 void test_lista(FILE *pfile){
     list_t* l = listNew();
-    char* data = "Batata";
-    char* data2 = "Dado";
-    char* data3 = "Pedrito";
+    listAddLast(l, strClone("hola"));
+    listAddLast(l, strClone("zapallo"));
+    listAddLast(l, strClone("hola"));
 
-    char* mallocdata = strClone(data);
-    char* mallocdata2 = strClone(data2);
-    char* mallocdata3 = strClone(data3);
+    char* toRemove = "hola";
 
-    char* prueba = "Zapallo";
-    char* mallocprueba = strClone(prueba);
-
-    listAddLast(l, mallocdata);
-    listAddLast(l, mallocdata2);
-    listAddLast(l, mallocdata3);
-
-    listAdd(l, mallocprueba, (funcCmp_t*)&strCmp);
-
-    list_t* copyOfL = listClone(l, (funcDup_t*)&strClone);
     FILE* fptr = fopen("output.txt", "w");
     listPrint(l, fptr, (funcPrint_t*)&strPrint);
-    printf("\nCopia de l:");
-    listPrint(copyOfL, fptr, (funcPrint_t*)&strPrint);
-
-    
-
-    listDelete(l, (funcDelete_t*)&strDelete);
-    printf("\nCopia de l: ");
-    listPrint(copyOfL, fptr, (funcPrint_t*)&strPrint);
-
-    listDelete(copyOfL, (funcDelete_t*)&strDelete);
-
+    printf("\n");
+    listRemove(l, toRemove, (funcCmp_t*)&strCmp, (funcDelete_t*)&strDelete);
+    listRemoveLast(l, (funcDelete_t*)&strDelete);
+    listPrint(l, fptr, (funcPrint_t*)&strPrint);
+    //listDelete(l, (funcDelete_t*)&strDelete);
+    free(l);
     fclose(fptr);
 }
 
