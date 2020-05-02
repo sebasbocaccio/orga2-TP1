@@ -11,6 +11,12 @@
 %define list_elem_next_offset 8
 %define list_elem_prev_offset 16
 
+%define sorter_structSize 32
+%define sorter_size_offset 0
+%define sorter_sorterFunc_offset 8
+%define sorter_cmpFunc_offset 16
+%define sorter_slots_offset 24
+
 section .data
 
 global strLen
@@ -41,6 +47,7 @@ global fs_bitSplit
 extern fprintf
 extern free
 extern malloc
+extern listRemove
 
 section .rodata
 
@@ -50,6 +57,8 @@ openBrFormat: db '[', 0
 closeBrFormat: db ']', 0
 commaFormat: db ',', 0
 pointerFormat: db '%p', 0
+sorterIndexFormat: db '%d = ', 0
+newLineFormat: db 10, 0
 
 section .text
 	;*** String ***
@@ -469,7 +478,7 @@ listDeleteNode:
 	pop rbp
 	ret
 
-listPrint:;
+listPrint:
 	;ARIDAD: void listPrint(list_t* l, FILE *pFile, funcPrint_t* fp)
 	;RDI: lista
 	;RSI: file
@@ -541,29 +550,361 @@ listPrint:;
 
 ;*** Sorter ***
 
+%define sorter_structSize 32
+%define sorter_size_offset 0
+%define sorter_sorterFunc_offset 8
+%define sorter_cmpFunc_offset 16
+%define sorter_slots_offset 24
+
 sorterNew:
-ret
+	;ARIDAD: sorter_t* sorterNew(uint16_t slots, funcSorter_t* fs, funcCmp_t* fc)
+	;DI: slots
+	;RSI: fs
+	;RDX: fc
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;--------
+	shl rdi, 48
+	shr rdi, 48
+	xor r13, r13
+	mov r12, rdi; R12: slots
+	mov r13, rsi; R13: fs
+	mov r14, rdx; R14: fc
+	;--------
+	mov rdi, sorter_structSize
+	call malloc
+	mov r15, rax; r15: newSorter
+	mov [r15 + sorter_size_offset], r12
+	mov [r15 + sorter_sorterFunc_offset], r13
+	mov [r15 + sorter_cmpFunc_offset], r14
+	mov r13, rax
+	lea rdi, [8 * r12]
+	call malloc
+	mov [r15 + sorter_slots_offset], rax 
+	;--------
+	mov rcx, r12
+	.loopSorterNew:
+		mov r14, rcx
+		call listNew
+		mov rcx, r14
+		mov rbx, [r15 + sorter_slots_offset]
+		mov [rbx + rcx * 8 - 8], rax
+		loop .loopSorterNew
+	;------------
+	mov rax, r13
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
 sorterAdd:
-ret
+	;ARIDAD: void sorterAdd(sorter_t* sorter, void* data)
+	;RDI: sorter
+	;RSI: data
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;---------
+	mov r12, rdi; R12: sorter
+	mov r13, rsi; R13: data
+	;---------
+	mov rdi, r13
+	call [r12 + sorter_sorterFunc_offset]
+	;Tengo que hacer EAX mod |sorter|
+	mov edx, eax
+	shr edx, 16
+	shl edx, 16
+	div word [r12 + sorter_size_offset]; DX ahora tiene el nro de slot
+	xor r14, r14
+	mov r14w, dx
+	mov r8, [r12 + sorter_slots_offset]
+	mov rdi, [r8 + r14 * 8]
+	mov rsi, r13
+	mov rdx, [r12 + sorter_cmpFunc_offset]
+	call listAdd
+	;---------
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
 sorterRemove:
-ret
+	;ARIDAD: void sorterAdd(sorter_t* sorter, void* data, funcDelete_t* fd)
+	;RDI: sorter
+	;RSI: data
+	;RDX: fd
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;---------
+	mov r12, rdi; R12: sorter
+	mov r13, rsi; R13: data
+	mov r14, rdx; R14: fd
+	;---------
+	mov rdi, r13
+	call [r12 + sorter_sorterFunc_offset]
+	;Tengo que hacer EAX mod |sorter|
+	mov edx, eax
+	shr edx, 16
+	shl edx, 16
+	div word [r12 + sorter_size_offset]; DX ahora tiene el nro de slot
+	xor r15, r15
+	mov r15w, dx
+	mov r8, [r12 + sorter_slots_offset]
+	mov rdi, [r8 + r15 * 8]
+	mov rsi, r13
+	mov rdx, [r12 + sorter_cmpFunc_offset]
+	mov rcx, r14
+	call listRemove
+	;---------
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
 sorterGetSlot:
-ret
+	;ARIDAD: void sorterGetSlot(sorter_t* sorter, uint16_t slot, funcDeleteup_t* fd)
+	;RDI: sorter
+	;SI: slot
+	;RDX: fd
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	;-----------
+	mov r12, rdi; R12: sorter
+	mov r13, rdx; R13: fd
+	xor rax, rax
+	mov ax, si
+	xor rdx, rdx
+	div word [r12 + sorter_size_offset]; DX ahora tiene el nro de slot
+	mov rdi, [r12 + sorter_slots_offset]
+	mov rdi, [rdi + rdx * 8]
+	mov rsi, r13
+	call listClone
+	;-----------
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
+%define list_size 16
+%define list_first_offset 0
+%define list_last_offset 8
+
+%define list_elem_size 24
+%define list_elem_data_offset 0
+%define list_elem_next_offset 8
+%define list_elem_prev_offset 16
+
 sorterGetConcatSlot:
-ret
+	;ARIDAD: char* sorterGetConcatSlot(sorter_t* sorter, uint16_t slot)
+	;RDI: sorter
+	;SI: slot
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;-------------
+	mov r12, rdi; R12: sorter
+	xor rax, rax
+	mov ax, si
+	xor rdx, rdx
+	div word [r12 + sorter_size_offset]; DX ahora tiene el nro de slot
+	mov r13, [r12 + sorter_slots_offset]
+	mov r13, [r13 + rdx * 8]; R13 tiene la lista buscada
+	;-------------
+	mov rdi, 1
+	call malloc
+	mov byte [rax], 0; Esto me sirve de buffer
+	mov r15, rax; R15 tiene al buffer
+	mov r14, [r13 + list_first_offset]; R14 nodo actual
+	.loopSorterSlotConcat:
+		cmp r14, NULL
+		je .finSorterSlotConcat
+		mov rdi, [r14 + list_elem_data_offset]
+		call strClone
+		mov rdi, r15
+		mov rsi, rax
+		call strConcat
+		mov r15, rax
+		mov r14, [r14 + list_elem_next_offset]
+		jmp .loopSorterSlotConcat
+	.finSorterSlotConcat:
+		mov rax, r15
+	;-------------
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
 sorterCleanSlot:
-ret
+	;ARIDAD: void sorterCleanSlot(sorter_t* sorter, uint16_t slot, funcDelete_t* fd)
+	;RDI: sorter
+	;RSI: slot
+	;RDX: fd
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	;-----------
+	mov r12, rdi; R12: sorter
+	mov r13, rdx; R13: fd
+	xor rax, rax
+	mov ax, si
+	xor rdx, rdx
+	div word [r12 + sorter_size_offset]; DX ahora tiene el nro de slot
+	mov r14, rdx; R14 tiene numero de slot
+	mov rdi, [r12 + sorter_slots_offset]
+	mov rdi, [rdi + rdx * 8]
+	mov rsi, r13
+	call listDelete
+	call listNew
+	mov rdi, [r12 + sorter_slots_offset]
+	mov [rdi + r14 * 8], rax
+	;-----------
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
 sorterDelete:
-ret
+	;ARIDAD: void sorterDelete(sorter_t* sorter, funcDelete_t* fd)
+	;RDI: sorter
+	;RSI: fd
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	push rbx
+	sub rsp, 8
+	;------------
+	mov r12, rdi; R12: sorter
+	mov r13, rsi; R13: fd
+	;------------
+	mov r14, [r12 + sorter_slots_offset]
+	xor r15, r15
+	mov r15w, word [r12 + sorter_size_offset]
+	xor rbx, rbx
+	.loopSorterDeleteLists:
+		cmp rbx, r15
+		je .endSorterDelete
+		mov rdi, [r14 + rbx * 8]
+		mov rsi, r13
+		call listDelete
+		inc rbx
+		jmp .loopSorterDeleteLists
+	.endSorterDelete:
+		mov rdi, [r12 + sorter_slots_offset]
+		call free
+		mov rdi, r12
+		call free
+	;------------
+	add rsp, 8
+	pop rbx
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
+
 sorterPrint:
-ret
+	;ARIDAD: void sorterPrint(sorter_t* sorter, FILE* pFile, funcPrint_t* fp)
+	;RDI: sorter
+	;RSI: file
+	;RDX: fp
+	push rbp
+	mov rbp, rsp
+	push r12
+	push r13
+	push r14
+	push r15
+	push rbx
+	sub rsp, 8
+	;----------
+	mov r12, rdi; R12: sorter
+	mov r13, rsi; r13: file
+	mov r14, rdx; R14: fp
+	;----------
+	mov r15w, word [r12 + sorter_size_offset]
+	xor rbx, rbx
+	.loopSorterPrint:
+		cmp bx, r15w
+		je .finSorterPrint
+		mov rdi, r13
+		mov rsi, sorterIndexFormat
+		mov rdx, rbx
+		call fprintf
+		mov rdi, [r12 + sorter_slots_offset];lista
+		mov rdi, [rdi + rbx * 8]
+		mov rsi, r13;file
+		mov rdx, r14;fp
+		call listPrint
+		mov rdi, r13
+		mov rsi, newLineFormat
+		call fprintf
+		inc rbx 
+		jmp .loopSorterPrint
+	;----------
+	.finSorterPrint:
+	;----------
+	add rsp, 8
+	pop rbx
+	pop r15
+	pop r14
+	pop r13
+	pop r12
+	pop rbp
+	ret
 
 ;*** aux Functions ***
 
 fs_sizeModFive:
-ret
+	;ARIDAD: uint16_t fs_sizeModFive(char* s)
+	;RDI: string
+	push rbp
+	mov rbp, rsp
+	;--------
+	call strLen
+	mov edx, eax
+	shr edx, 16
+	shl edx, 16
+	mov r8, 5
+	div r8w
+	xor rax, rax
+	mov ax, dx
+	;--------
+	pop rbp
+	ret
+
 fs_firstChar:
 ret
 fs_bitSplit:
 ret
-
