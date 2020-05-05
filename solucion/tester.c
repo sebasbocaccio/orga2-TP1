@@ -22,7 +22,7 @@ int main() {
     remove(filename_1);
     test_1();
     remove(filename_2);
-    //test_2();
+    test_2();
     return 0;
 }
 
@@ -191,7 +191,39 @@ void test_list(FILE *pfile) {
     listRemoveLast(l1, (funcDelete_t*)&strDelete);
     listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
     listDelete(l1,(funcDelete_t*)&strDelete);
+
+    // Estos Tests no los pusieron ( :D  )
+
+    //  char* strings[10] = {"aa","bb","dd","ff","00","zz","cc","ee","gg","hh"};
+    //Orden que necesito [00,aa,bb,cc,dd,ee,ff,gg,hh,zz]
+    /*
+    [00,aa,bb,cc,dd,ee,ff,gg,hh,zz]
+    [00,aa,bb,cc,ee,ff,gg,hh,zz]
+    [00,aa,bb,cc,ee,ff,gg,hh]
+    [aa,bb,cc,ee,ff,gg,hh]
+    [aa,bb,cc,ee,ff,gg]
+    [aa,bb,cc,ee,ff,gg]
+    [bb,cc,ee,ff,gg]
+    [bb,cc,ee,ff]
+    [cc,ee,ff]
+    [cc,ee,ff]
+    */
+    /*
+    listasString = listNew();
+    listAddFirst(listasString, strClone(*strings[4]));
+    listAddLast(listasString, strClone(*strings[0]));
+    listAddLast(listasString, strClone(*strings[1]));
+    listAddLast(listasString, strClone(*strings[6]));
+    listAddLast(listasString, strClone(*strings[2]));
+    listAddLast(listasString, strClone(*strings[7]));
+    listAddLast(listasString, strClone(*strings[3]));
+    listAddLast(listasString, strClone(*strings[9]));
+    listAddLast(listasString, strClone(*strings[10]));
+    listAddLast(listasString, strClone(*strings[5]));
     
+    listPrint(listasString,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listDeleteNode( , )
+    */
 }
 
 /** Sorter **/
@@ -290,7 +322,7 @@ void test_1(char* filename){
     FILE *pfile;
     RUN(filename,test_strings(pfile););
     RUN(filename,test_list(pfile););
-    //RUN(filename,test_sorter(pfile););
+    RUN(filename,test_sorter(pfile););
 }
 
 void test_2(char* filename){

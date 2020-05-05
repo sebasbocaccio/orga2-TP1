@@ -8,6 +8,11 @@
 #include "lib.h"
 
 void test_string() {
+    FILE* files = fopen("salidanull.txt", "w");    
+    char* b = strClone("");
+    strPrint(b, files);
+
+    fclose(files);
 }
 
 void test_lista(FILE *pfile){
@@ -54,11 +59,14 @@ void test_sorter(FILE *pfile){
 }
 
 int main (void){
-    FILE *pfile = fopen("salida.caso.propios.txt","w");
+
+
+   // FILE *pfile = fopen("salida.caso.propios.txt","w");
     //test_lista(pfile);
-    test_sorter(pfile);
-    //test_string();
-    fclose(pfile);
+    //test_sorter(pfile);
+    test_string();
+    //fclose(pfile);
+    printf("\n Termino tests \n");
     return 0;
 }
 

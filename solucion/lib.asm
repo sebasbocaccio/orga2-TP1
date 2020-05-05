@@ -52,7 +52,7 @@ extern listRemove
 section .rodata
 
 stringPrintFormat: db '%s', 0
-nullString: db 'NULL'
+nullString: db 'NULL',0
 openBrFormat: db '[', 0
 closeBrFormat: db ']', 0
 commaFormat: db ',', 0
@@ -217,8 +217,10 @@ strPrint:
 		jmp .endStrPrint
 	.printNull:
 		mov RDI, RSI
-		mov RSI, stringPrintFormat
-		mov RDX, nullString
+		;mov RSI, stringPrintFormat
+		;mov RDX, nullString
+		mov rsi, nullString
+			
 	.endStrPrint:
 		call fprintf
 	pop rbp
@@ -456,7 +458,7 @@ listDelete:
 	pop rbp
 	ret
 
-listDeleteNode:
+	listDeleteNode:
 	;listDeleteNode(node*, funcDelete* fd)
 	;RDI: nodo
 	;RSI: funcDelete
@@ -491,6 +493,7 @@ listPrint:
 	push r13
 	push r14
 	push r15
+	
 	;---------------
 	mov r12, rdi; R12: lista
 	mov r13, rsi; R13: file
@@ -524,6 +527,7 @@ listPrint:
 	.loopListFPrintf:
 		cmp r15, NULL
 		je .endListPrint
+		inc rbx
 		mov rdi, r13 
 		mov rsi, pointerFormat
 		mov rdx, [r15 + list_elem_data_offset]
@@ -538,6 +542,7 @@ listPrint:
 	;---------------
 	.endListPrint:
 	mov rdi, r13
+	cmp r12, NULL
 	mov rsi, closeBrFormat
 	call fprintf
 	;---------------	
@@ -910,10 +915,10 @@ fs_firstChar:
 push rbp
 mov rbp, rsp
 ;-----------
-xor rax ; Limpio registro
+xor rax,rax ; Limpio registro
 ;Consigo el primer valor, sea nulo o no
-mov  byte dl , [rdi]
-mov al, dl
+mov  byte al , [rdi]
+
 
 fs_firstCharEnd:
 ;-----------
@@ -927,7 +932,7 @@ push rbx
 xor ax,ax
 mov cx, 1 ; Se usa para ver si es potencia de 2 cual es.   
 mov bl,2
-mov byte al, [rdi]
+mov word al, [rdi]
 cmp al, 0
 je  poner8
 verSidividea2:
