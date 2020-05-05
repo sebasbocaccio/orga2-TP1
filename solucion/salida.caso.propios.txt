@@ -1,0 +1,8 @@
+Slot2 concatted: 
+0 = [perro,perro,perro]
+1 = []
+2 = [abuelas,ma,manzana,pa]
+3 = []
+4 = [hola,papa]
+Printing slot 3: 
+[]

@@ -560,7 +560,7 @@ sorterNew:
 	;ARIDAD: sorter_t* sorterNew(uint16_t slots, funcSorter_t* fs, funcCmp_t* fc)
 	;DI: slots
 	;RSI: fs
-	;RDX: fc
+	;RDX: funcCmp
 	push rbp
 	mov rbp, rsp
 	push r12
@@ -697,7 +697,7 @@ sorterGetSlot:
 	mov rdi, [r12 + sorter_slots_offset]
 	mov rdi, [rdi + rdx * 8]
 	mov rsi, r13
-	call listClone
+	call listClone ; 
 	;-----------
 	pop r13
 	pop r12
@@ -905,6 +905,55 @@ fs_sizeModFive:
 	ret
 
 fs_firstChar:
+;ARIDAD uint16_t fs_firstChar(char* s)
+; RDI: string
+push rbp
+mov rbp, rsp
+;-----------
+xor rax ; Limpio registro
+;Consigo el primer valor, sea nulo o no
+mov  byte dl , [rdi]
+mov al, dl
+
+fs_firstCharEnd:
+;-----------
+pop rbp
 ret
 fs_bitSplit:
+push rbp
+mov rbp, rsp
+push rbx
+;-----------
+xor ax,ax
+mov cx, 1 ; Se usa para ver si es potencia de 2 cual es.   
+mov bl,2
+mov byte al, [rdi]
+cmp al, 0
+je  poner8
+verSidividea2:
+div bl
+cmp ah,0
+jne poner9
+
+verBiti:
+div bl
+cmp ah,0
+jne ponerBiti
+inc cx
+jmp verBiti
+poner8:
+mov ax, 8
+jmp fs_bitSplitEnd
+
+poner9:
+mov ax,9
+jmp fs_bitSplitEnd
+
+ponerBiti:
+mov ax,cx 
+
+fs_bitSplitEnd:
+;-----------
+pop rbx
+pop rbp
 ret
