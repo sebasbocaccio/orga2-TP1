@@ -910,55 +910,60 @@ fs_sizeModFive:
 	ret
 
 fs_firstChar:
-;ARIDAD uint16_t fs_firstChar(char* s)
-; RDI: string
-push rbp
-mov rbp, rsp
-;-----------
-xor rax,rax ; Limpio registro
-;Consigo el primer valor, sea nulo o no
-mov  byte al , [rdi]
+	;ARIDAD uint16_t fs_firstChar(char* s)
+	; RDI: string
+	push rbp
+	mov rbp, rsp
+	;-----------
+	xor rax,rax ; Limpio registro
+	;Consigo el primer valor, sea nulo o no
+	mov  byte al , [rdi]
+	fs_firstCharEnd:
+	;-----------
+	pop rbp
+	ret
 
 
-fs_firstCharEnd:
-;-----------
-pop rbp
-ret
 fs_bitSplit:
-push rbp
-mov rbp, rsp
-push rbx
-;-----------
-xor ax,ax
-mov cx, 1 ; Se usa para ver si es potencia de 2 cual es.   
-mov bl,2
-mov word al, [rdi]
-cmp al, 0
-je  poner8
-verSidividea2:
-div bl
-cmp ah,0
-jne poner9
+	push rbp
+	mov rbp, rsp
+	push rbx
+	;-----------
+	xor ax,ax
+	xor r8, r8
+	xor r9, r9   
+	mov bl,2
+	mov byte al, [rdi]
+	mov r9b, al 
+	cmp al, 0
+	je  poner8
 
-verBiti:
-div bl
-cmp ah,0
-jne ponerBiti
-inc cx
-jmp verBiti
-poner8:
-mov ax, 8
-jmp fs_bitSplitEnd
+	mov r8, 1
+	xor cx, cx ; Se usa para ver si es potencia de 2 cual es.
+	
+	verBiti:
+	div bl
+	cmp ah,0
+	jne ponerBiti
+	inc cx
+	shl r8, 1
+	jmp verBiti
 
-poner9:
-mov ax,9
-jmp fs_bitSplitEnd
+	poner8:
+	mov ax, 8
+	jmp fs_bitSplitEnd
 
-ponerBiti:
-mov ax,cx 
+	poner9:
+	mov ax,9
+	jmp fs_bitSplitEnd
 
-fs_bitSplitEnd:
-;-----------
-pop rbx
-pop rbp
-ret
+	ponerBiti:
+	cmp r8, r9
+	jne poner9
+	mov ax,cx 
+
+	fs_bitSplitEnd:
+	;-----------
+	pop rbx
+	pop rbp
+	ret

@@ -11,6 +11,7 @@ void test_string() {
     FILE* files = fopen("salidanull.txt", "w");    
     char* b = strClone("");
     strPrint(b, files);
+    strDelete(b);
 
     fclose(files);
 }
@@ -58,13 +59,23 @@ void test_sorter(FILE *pfile){
     strDelete(slot2Concatted);
 }
 
+void test_sorter_hash_funcs() {
+    for(int i = 0; i < 40; ++i) {
+        char a = 0x1;
+        uint16_t res = fs_bitSplit(&a);
+        printf("Res is %hu", res);    
+    }
+    
+}
+
 int main (void){
 
 
    // FILE *pfile = fopen("salida.caso.propios.txt","w");
     //test_lista(pfile);
     //test_sorter(pfile);
-    test_string();
+    //test_string();
+    test_sorter_hash_funcs();
     //fclose(pfile);
     printf("\n Termino tests \n");
     return 0;

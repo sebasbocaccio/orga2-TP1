@@ -191,39 +191,39 @@ void test_list(FILE *pfile) {
     listRemoveLast(l1, (funcDelete_t*)&strDelete);
     listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
     listDelete(l1,(funcDelete_t*)&strDelete);
-
-    // Estos Tests no los pusieron ( :D  )
-
-    //  char* strings[10] = {"aa","bb","dd","ff","00","zz","cc","ee","gg","hh"};
-    //Orden que necesito [00,aa,bb,cc,dd,ee,ff,gg,hh,zz]
-    /*
-    [00,aa,bb,cc,dd,ee,ff,gg,hh,zz]
-    [00,aa,bb,cc,ee,ff,gg,hh,zz]
-    [00,aa,bb,cc,ee,ff,gg,hh]
-    [aa,bb,cc,ee,ff,gg,hh]
-    [aa,bb,cc,ee,ff,gg]
-    [aa,bb,cc,ee,ff,gg]
-    [bb,cc,ee,ff,gg]
-    [bb,cc,ee,ff]
-    [cc,ee,ff]
-    [cc,ee,ff]
-    */
-    /*
-    listasString = listNew();
-    listAddFirst(listasString, strClone(*strings[4]));
-    listAddLast(listasString, strClone(*strings[0]));
-    listAddLast(listasString, strClone(*strings[1]));
-    listAddLast(listasString, strClone(*strings[6]));
-    listAddLast(listasString, strClone(*strings[2]));
-    listAddLast(listasString, strClone(*strings[7]));
-    listAddLast(listasString, strClone(*strings[3]));
-    listAddLast(listasString, strClone(*strings[9]));
-    listAddLast(listasString, strClone(*strings[10]));
-    listAddLast(listasString, strClone(*strings[5]));
-    
-    listPrint(listasString,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
-    listDeleteNode( , )
-    */
+    // listRemove listRemoveFirst listRemoveLast
+    fprintf(pfile,"==> listRemove listRemoveFirst listRemoveLast\n");
+    l1 = listNew();
+    listRemove(l1, strings[2], (funcCmp_t*)&strCmp, 0);
+    listRemoveFirst(l1, 0);
+    listRemoveLast(l1, 0);
+    char* stringsLocal[10];
+    for(int i=0; i<10;i++)
+        stringsLocal[i] = strClone(strings[i]);
+    for(int i=0; i<10;i++)
+        listAdd(l1,stringsLocal[i],(funcCmp_t*)&strCmp);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemove(l1, strings[2], (funcCmp_t*)&strCmp, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemoveLast(l1, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemoveFirst(l1, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemoveLast(l1, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemove(l1, strings[2], (funcCmp_t*)&strCmp, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemoveFirst(l1, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemoveLast(l1, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemoveFirst(l1, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listRemove(l1, strings[2], (funcCmp_t*)&strCmp, 0);
+    listPrint(l1,pfile,(funcPrint_t*)&strPrint); fprintf(pfile,"\n");
+    listDelete(l1,0);
+    for(int i=0; i<10;i++)
+        free(stringsLocal[i]);
 }
 
 /** Sorter **/
@@ -365,6 +365,7 @@ void test_2(char* filename){
     }
     sorterDelete(s, (funcDelete_t*)&strDelete);
     // 3
+    RUN(filename, fprintf(pfile, "[TEST3]\n"););NL(filename)
     s = sorterNew(10, (funcSorter_t*)&fs_bitSplit, (funcCmp_t*)&strCmp);
     for(int i=0; i<15; i++) {
         for(int j=0; j<30; j++) {
