@@ -127,9 +127,7 @@ strCmp:
 		jne .strCmpLesser
 		jmp .endStrCmp
 	.strCheck2:
-		;cmp byte [RDI], nullTerminator
 		jne .strCmpGreater
-		;jmp .endStrCmp
 	.strCmpGreater:
 		dec RAX
 		jmp .endStrCmp
