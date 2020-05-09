@@ -7,6 +7,30 @@
 
 #include "lib.h"
 
+void test_cmp(FILE *pfile) {
+    uint8_t* a = (uint8_t*)malloc(3);
+    a[0] = 'a';
+    a[1] = 0xFF
+    ;
+    a[2] = 0;
+
+    int res = strCmp("a", (char*)a);
+    int res_back = strCmp((char*)a, "a");
+
+    printf("Primero 'a' es: %d. Backwards es: %d\n", res, res_back);
+}
+
+char* randomHexString(uint32_t l) {
+    char* s = malloc(l+1);
+    for(uint32_t i=0; i<(l+1); i++) {
+        do {
+            s[i] = (char)(rand()%256);
+        } while (s[i]==0);
+    }
+    s[l] = 0;
+    return s;
+}
+
 void test_string() {
     FILE* files = fopen("salidanull.txt", "w");    
     char* b = strClone("");
@@ -59,24 +83,38 @@ void test_sorter(FILE *pfile){
     strDelete(slot2Concatted);
 }
 
-void test_sorter_hash_funcs() {
-    for(int i = 0; i < 40; ++i) {
-        char a = 0x1;
-        uint16_t res = fs_bitSplit(&a);
-        printf("Res is %hu", res);    
-    }
+void test_sorter_hash_funcs(FILE *pfile) {
+    sorter_t* s = sorterNew(256, (funcSorter_t*)&fs_firstChar, (funcCmp_t*)&strCmp);
+        for(int j=0; j<30; j++) {
+            for(int l=0; l<10; l++) {
+                sorterAdd(s, randomHexString(l));
+            }
+        }
+        sorterPrint(s, pfile, (funcPrint_t*)&strPrint);
+        for(int i=0; i<256; i++) {
+            if (i == 64) {
+                char* concat = sorterGetConcatSlot(s,i);
+                fprintf(pfile, "\n [GASTI]  \n");
+                hexPrint(concat, pfile);
+                free(concat);
+            }
+        }
+        sorterRemove(s, "a", (funcDelete_t*)&strDelete);
+        sorterCleanSlot(s, (17*0)%256, (funcDelete_t*)&strDelete);
+        //sorterPrint(s, pfile, (funcPrint_t*)&strPrint);
     
 }
 
 int main (void){
+    srand(12345);
 
-
-   // FILE *pfile = fopen("salida.caso.propios.txt","w");
+    FILE *pfile = fopen("salida.caso.propios.txt","w");
     //test_lista(pfile);
     //test_sorter(pfile);
     //test_string();
-    test_sorter_hash_funcs();
-    //fclose(pfile);
+    //test_sorter_hash_funcs(pfile);
+    test_cmp(NULL);
+    fclose(pfile);
     printf("\n Termino tests \n");
     return 0;
 }

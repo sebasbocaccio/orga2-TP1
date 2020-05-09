@@ -365,7 +365,6 @@ void test_2(char* filename){
     }
     sorterDelete(s, (funcDelete_t*)&strDelete);
     // 3
-    RUN(filename, fprintf(pfile, "[TEST3]\n"););NL(filename)
     s = sorterNew(10, (funcSorter_t*)&fs_bitSplit, (funcCmp_t*)&strCmp);
     for(int i=0; i<15; i++) {
         for(int j=0; j<30; j++) {

@@ -106,10 +106,14 @@ strCmp:
 	;strCmp(char* a, char* b)
 	;RDI; a
 	;RSI: b
+	;ala
+	;a
 	xor RAX, RAX
 	.strCmpLoop:
 		cmp byte [RDI], nullTerminator
-		je .strCheck
+		je .strCheck1
+		cmp byte [RSI], nullTerminator
+		je .strCheck2
 		mov R8b, byte [RSI]
 		cmp byte [RDI], R8b
 		jg .strCmpGreater
@@ -118,10 +122,14 @@ strCmp:
 		inc RSI
 		jmp .strCmpLoop
 	jmp .endStrCmp 
-	.strCheck:;TODO pensar mejor nombre para esta etiqueta
+	.strCheck1:;TODO pensar mejor nombre para esta etiqueta
 		cmp byte [RSI], nullTerminator
 		jne .strCmpLesser
 		jmp .endStrCmp
+	.strCheck2:
+		;cmp byte [RDI], nullTerminator
+		jne .strCmpGreater
+		;jmp .endStrCmp
 	.strCmpGreater:
 		dec RAX
 		jmp .endStrCmp
@@ -912,15 +920,11 @@ fs_sizeModFive:
 fs_firstChar:
 	;ARIDAD uint16_t fs_firstChar(char* s)
 	; RDI: string
-	push rbp
-	mov rbp, rsp
 	;-----------
-	xor rax,rax ; Limpio registro
+	xor rax, rax ; Limpio registro
 	;Consigo el primer valor, sea nulo o no
-	mov  byte al , [rdi]
-	fs_firstCharEnd:
+	mov AL , byte [rdi]
 	;-----------
-	pop rbp
 	ret
 
 
@@ -940,7 +944,7 @@ fs_bitSplit:
 
 	mov r8, 1
 	xor cx, cx ; Se usa para ver si es potencia de 2 cual es.
-	
+
 	verBiti:
 	div bl
 	cmp ah,0
